@@ -8,17 +8,16 @@ import { io } from 'socket.io-client';
 
 export default function App() {
   const [temperature, setTemperature] = useState(0);
-  const [humidity, setHumidity] = useState(0);
   const [aTemperature, setATemperature] = useState(0);
-  const [aHumidity, setAHumidity] = useState(0);
-  const socket = io('http://65b7f9e5596b.ngrok.io');
-  async function getData() {
-    const response = await fetch('http://65b7f9e5596b.ngrok.io/records');
-    const data = await response.json();
+  const socket = io('http://e5507d620aa4.ngrok.io');
 
-    setAHumidity(data.humidity);
+  async function getData() {
+    const response = await fetch('http://e5507d620aa4.ngrok.io/records');
+    const data = await response.json();
     setATemperature(data.temperature);
   }
+
+  
 
   useEffect(() => {
     firebase.initializeApp(firebaseConfig);
@@ -28,18 +27,14 @@ export default function App() {
       .on('value', (snapshot) => {
         setTemperature(snapshot.val());
       });
-    firebase
-      .database()
-      .ref('/humidity')
-      .on('value', (snapshot) => {
-        setHumidity(snapshot.val());
-      });
     getData();
   }, []);
 
   socket.on('new_data', (data) => {
-    setAHumidity(data.humidity)
     setATemperature(data.temperature)
+    if (aTemperature > 8000) {
+      notification.showNotification('Warning', 'You Exceeded You Yearly Dose');
+    }
   });
 
   return (
@@ -63,34 +58,7 @@ export default function App() {
           <H3>{aTemperature}</H3>
         </Col>
       </Row>
-      {/* <Row>
-        <Col style={styles.row}>
-          <H3>Humidity (%):</H3>
-        </Col>
-        <Col style={styles.row}>
-          <H3>{humidity}</H3>
-        </Col>
-      </Row>
-      <Row>
-        <Col style={styles.row}>
-          <H3>Accumulated Humidity (%):</H3>
-        </Col>
-        <Col style={styles.row}>
-          <H3>{aHumidity}</H3>
-        </Col>
-      </Row> */}
       <Row style={styles.row}>
-        <Button
-          info
-          onPress={() => {
-            notification.showNotification(
-              'Alarm',
-              'A Notification'
-            );
-          }}
-        >
-          <Text>Push Notification</Text>
-        </Button>
       </Row>
     </Container>
   );
