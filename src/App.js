@@ -4,15 +4,16 @@ import firebase from 'firebase';
 import firebaseConfig from './config.json';
 import { Container, Row, Col, H1, H3, Button, Text } from 'native-base';
 import { notification } from './notificationManager';
+import { io } from 'socket.io-client';
 
 export default function App() {
   const [temperature, setTemperature] = useState(0);
   const [humidity, setHumidity] = useState(0);
   const [aTemperature, setATemperature] = useState(0);
   const [aHumidity, setAHumidity] = useState(0);
-
+  const socket = io('http://65b7f9e5596b.ngrok.io');
   async function getData() {
-    const response = await fetch('http://de21cafcc6cd.ngrok.io/records');
+    const response = await fetch('http://65b7f9e5596b.ngrok.io/records');
     const data = await response.json();
 
     setAHumidity(data.humidity);
@@ -36,6 +37,11 @@ export default function App() {
     getData();
   }, []);
 
+  socket.on('new_data', (data) => {
+    setAHumidity(data.humidity)
+    setATemperature(data.temperature)
+  });
+
   return (
     <Container>
       <Row style={styles.row}>
@@ -57,7 +63,7 @@ export default function App() {
           <H3>{aTemperature}</H3>
         </Col>
       </Row>
-      <Row>
+      {/* <Row>
         <Col style={styles.row}>
           <H3>Humidity (%):</H3>
         </Col>
@@ -72,7 +78,7 @@ export default function App() {
         <Col style={styles.row}>
           <H3>{aHumidity}</H3>
         </Col>
-      </Row>
+      </Row> */}
       <Row style={styles.row}>
         <Button
           info
